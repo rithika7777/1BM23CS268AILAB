@@ -1,0 +1,93 @@
+# -------------------------------
+# Node class for full binary tree
+# -------------------------------
+class Node:
+    def __init__(self, value=None, left=None, right=None):
+        self.value = value
+        self.left = left
+        self.right = right
+
+
+# -------------------------------
+# Alpha–Beta Pruning with logs
+# -------------------------------
+def alpha_beta(node, depth, alpha, beta, is_max):
+    indent = "  " * depth   # pretty-print levels
+
+    # Leaf node
+    if node.left is None:
+        print(f"{indent}Leaf {node.value} reached.")
+        return node.value
+
+    if is_max:
+        print(f"{indent}MAX node at depth {depth}  (alpha={alpha}, beta={beta})")
+        best = float("-inf")
+
+        # explore left then right
+        for child in [node.left, node.right]:
+            val = alpha_beta(child, depth+1, alpha, beta, False)
+            best = max(best, val)
+            alpha = max(alpha, best)
+
+            print(f"{indent}  MAX updated → best={best}, alpha={alpha}, beta={beta}")
+
+            # prune
+            if beta <= alpha:
+                print(f"{indent}  PRUNE: beta({beta}) <= alpha({alpha}) → Remaining child skipped")
+                break
+
+        return best
+
+    else:  # MIN level
+        print(f"{indent}MIN node at depth {depth}  (alpha={alpha}, beta={beta})")
+        best = float("inf")
+
+        for child in [node.left, node.right]:
+            val = alpha_beta(child, depth+1, alpha, beta, True)
+            best = min(best, val)
+            beta = min(beta, best)
+
+            print(f"{indent}  MIN updated → best={best}, alpha={alpha}, beta={beta}")
+
+            # prune
+            if beta <= alpha:
+                print(f"{indent}  PRUNE: beta({beta}) <= alpha({alpha}) → Remaining child skipped")
+                break
+
+        return best
+
+
+# --------------------------------------------
+# Build the exact tree so result = 10
+# --------------------------------------------
+# depth 4 leaves
+leaves = [Node(v) for v in [10, 9, 14, 18, 5, 4, 50, 3]]
+
+# depth 3 (MAX)
+d3 = [
+    Node(left=leaves[0], right=leaves[1]),
+    Node(left=leaves[2], right=leaves[3]),
+    Node(left=leaves[4], right=leaves[5]),
+    Node(left=leaves[6], right=leaves[7])
+]
+
+# depth 2 (MIN)
+d2 = [
+    Node(left=d3[0], right=d3[1]),
+    Node(left=d3[2], right=d3[3])
+]
+
+# depth 1 (MIN)
+d1 = Node(left=d2[0], right=d2[1])
+
+# root depth 0 (MAX)
+root = d1
+
+
+# -------------------------------
+# Execute Alpha–Beta
+# -------------------------------
+print("\n--- Alpha–Beta Pruning Trace ---\n")
+result = alpha_beta(root, 0, float("-inf"), float("inf"), True)
+
+print("\nThe optimal value for maximizing player is :", result)

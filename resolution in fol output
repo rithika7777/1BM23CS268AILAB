@@ -1,0 +1,80 @@
+=================================
+ STEP 1: Convert sentences to CNF
+=================================
+
+1. John likes all food:
+   ∀x Food(x) → Likes(John,x)
+   CNF:  ¬Food(x) ∨ Likes(John,x)
+   Grounding for constants Apple, Vegetable, Peanuts
+
+2. Apple & Vegetable are food
+   Food(Apple)
+   Food(Vegetable)
+
+3. Eats(x,y) & Alive(x) → Food(y)
+   CNF: ¬Eats(x,y) ∨ ¬Alive(x) ∨ Food(y)
+   Grounded for Anil and Peanuts
+
+4. Anil eats peanuts & is alive:
+   Eats(Anil,Peanuts)
+   Alive(Anil)
+
+5. Alive → ¬Killed
+   CNF: ¬Alive(x) ∨ ¬Killed(x)
+
+6. ¬Killed → Alive
+   CNF: Killed(x) ∨ Alive(x)
+
+Done converting to CNF.
+
+=======================================
+ STEP 2: Negate the conclusion
+=======================================
+
+Conclusion to prove: Likes(John,Peanuts)
+Negated conclusion added for refutation: ~Likes(John,Peanuts) 
+
+===============================================
+ STEP 3: Add clauses (including negated goal)
+===============================================
+
+Clause 1: ~Food(Peanuts) ∨ Likes(John,Peanuts)
+Clause 2: ~Food(Apple) ∨ Likes(John,Apple)
+Clause 3: ~Food(Vegetable) ∨ Likes(John,Vegetable)
+Clause 4: Food(Apple)
+Clause 5: Food(Vegetable)
+Clause 6: ~Eats(Anil,Peanuts) ∨ ~Alive(Anil) ∨ Food(Peanuts)
+Clause 7: Eats(Anil,Peanuts)
+Clause 8: Alive(Anil)
+Clause 9: ~Alive(Anil) ∨ ~Killed(Anil)
+Clause 10: Killed(Anil) ∨ Alive(Anil)
+Clause 11: ~Likes(John,Peanuts)
+
+============================
+ STEP 4: Resolution Tree
+============================
+
+
+                                  {}
+                                 /  \
+                 Likes(John,Peanuts)   ~Likes(John,Peanuts)
+                           |
+           ~Food(Peanuts) ∨ Likes(John,Peanuts)
+                           |
+                       Food(Peanuts)
+                           |
+      ~Eats(Anil,Peanuts) ∨ ~Alive(Anil) ∨ Food(Peanuts)
+                    /                       \
+     Eats(Anil,Peanuts)               ~Alive(Anil) ∨ ~Killed(Anil)
+                                             /               \
+                                      Alive(Anil)     Killed(Anil) ∨ Alive(Anil)
+    
+
+✔ PROVEN: John likes peanuts (empty clause reached)
+
+<<<<<<<<<OR>>>>>>>>>>
+
+
+
+✔ PROVEN: John likes peanuts
+True

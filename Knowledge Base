@@ -1,0 +1,60 @@
+def pl_resolution(KB, query):
+    """
+    KB: list of clauses (each clause is a set of literals)
+    query: clause (set of literals)
+    Return True if KB entails query, False otherwise
+    """
+    # Negate the query
+    negated_query = [{negate_literal(lit)} for lit in query]
+
+    clauses = KB + negated_query
+    new = set()
+
+    def pl_resolve(ci, cj):
+        resolvents = set()
+        for di in ci:
+            for dj in cj:
+                if di == negate_literal(dj):
+                    resolvent = (ci - {di}) | (cj - {dj})
+                    resolvents.add(frozenset(resolvent))
+        return resolvents
+
+    while True:
+        n = len(clauses)
+        pairs = [(clauses[i], clauses[j]) for i in range(n) for j in range(i+1, n)]
+        for (ci, cj) in pairs:
+            resolvents = pl_resolve(ci, cj)
+            if frozenset() in resolvents:  # Empty clause found
+                return True
+            new = new.union(resolvents)
+        if new.issubset(set(map(frozenset, clauses))):
+            return False
+        for c in new:
+            if set(c) not in clauses:
+                clauses.append(set(c))
+
+def negate_literal(lit):
+    """Negate a literal"""
+    if lit.startswith('~'):
+        return lit[1:]
+    else:
+        return '~' + lit
+
+# Example:
+
+# Knowledge base (KB) as clauses
+# Example KB:
+# 1) P or Q
+# 2) ~P or R
+# 3) ~Q or R
+KB = [
+    {'P', 'Q'},
+    {'~P', 'R'},
+    {'~Q', 'R'}
+]
+
+# Query: R
+query = {'R'}
+
+result = pl_resolution(KB, query)
+print(f"Does KB entail the query {query}? {'Yes' if result else 'No'}")

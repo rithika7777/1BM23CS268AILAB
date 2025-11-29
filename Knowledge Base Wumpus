@@ -1,0 +1,57 @@
+# Wumpus World – Simple Knowledge Base Inference (Clean Output)
+
+# Step 1: Define known percepts
+KB = {
+    'B11': False,   # No breeze at (1,1)
+    'S11': False,   # No stench at (1,1)
+    'P11': False,   # No pit at (1,1)
+    'W11': False,   # No Wumpus at (1,1)
+    'B21': True,    # Breeze at (2,1)
+    'S21': False    # No stench at (2,1)
+}
+
+# Step 2: Inference rules
+def infer_facts(KB):
+    inferred = {}
+
+    # If no breeze at (1,1) → no pits in adjacent (1,2), (2,1)
+    if KB.get('B11') == False:
+        inferred['P12'] = False
+        inferred['P21'] = False
+
+    # If no stench at (1,1) → no Wumpus in adjacent (1,2), (2,1)
+    if KB.get('S11') == False:
+        inferred['W12'] = False
+        inferred['W21'] = False
+
+    # If no stench at (2,1) → no Wumpus in adjacent (1,1), (2,2), (3,1)
+    if KB.get('S21') == False:
+        inferred['W22'] = False
+        inferred['W31'] = False
+        inferred['W11'] = False
+
+    return inferred
+
+# Step 3: Infer new facts
+KB.update(infer_facts(KB))
+
+# Step 4: Define the queries
+queries = {
+    "Is there a Pit at (1,2)?": 'P12',
+    "Is there a Wumpus at (2,2)?": 'W22'
+}
+
+# Step 5: Check and print only query results
+for question, symbol in queries.items():
+    result = KB.get(symbol, None)
+    if result is None:
+        print(f"{question} → Unknown (not entailed or contradicted)")
+    elif result:
+        print(f"{question} → YES (KB entails {symbol})")
+    else:
+        print(f"{question} → NO (KB entails ¬{symbol})")
+
+
+Output:
+Is there a Pit at (1,2)? → NO (KB entails ¬P12)
+Is there a Wumpus at (2,2)? → NO (KB entails ¬W22)

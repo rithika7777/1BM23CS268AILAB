@@ -1,0 +1,27 @@
+-- Alpha–Beta Pruning Trace ---
+
+MAX node at depth 0  (alpha=-inf, beta=inf)
+  MIN node at depth 1  (alpha=-inf, beta=inf)
+    MAX node at depth 2  (alpha=-inf, beta=inf)
+      Leaf 10 reached.
+      MAX updated → best=10, alpha=10, beta=inf
+      Leaf 9 reached.
+      MAX updated → best=10, alpha=10, beta=inf
+    MIN updated → best=10, alpha=-inf, beta=10
+    MAX node at depth 2  (alpha=-inf, beta=10)
+      Leaf 14 reached.
+      MAX updated → best=14, alpha=14, beta=10
+      PRUNE: beta(10) <= alpha(14) → Remaining child skipped
+    MIN updated → best=10, alpha=-inf, beta=10
+  MAX updated → best=10, alpha=10, beta=inf
+  MIN node at depth 1  (alpha=10, beta=inf)
+    MAX node at depth 2  (alpha=10, beta=inf)
+      Leaf 5 reached.
+      MAX updated → best=5, alpha=10, beta=inf
+      Leaf 4 reached.
+      MAX updated → best=5, alpha=10, beta=inf
+    MIN updated → best=5, alpha=10, beta=5
+    PRUNE: beta(5) <= alpha(10) → Remaining child skipped
+  MAX updated → best=10, alpha=10, beta=inf
+
+The optimal value for maximizing player is : 10

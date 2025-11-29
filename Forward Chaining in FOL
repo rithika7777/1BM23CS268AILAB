@@ -1,0 +1,153 @@
+# =======================================
+# Forward Reasoning (Forward Chaining) in FOL
+# =======================================
+
+from copy import deepcopy
+
+# ---------- Unification Helpers ----------
+def occur_check(var, x):
+    if var == x:
+        return True
+    elif isinstance(x, list):
+        return any(occur_check(var, xi) for xi in x)
+    return False
+
+def substitute(s, theta):
+    if isinstance(s, list):
+        return [substitute(si, theta) for si in s]
+    elif s in theta:
+        return substitute(theta[s], theta)
+    else:
+        return s
+
+def unify(x, y, theta=None):
+    if theta is None:
+        theta = {}
+    if theta == "FAILURE":
+        return "FAILURE"
+    if x == y:
+        return theta
+    if isinstance(x, str) and x.islower():
+        if occur_check(x, y):
+            return "FAILURE"
+        theta[x] = y
+        return theta
+    if isinstance(y, str) and y.islower():
+        if occur_check(y, x):
+            return "FAILURE"
+        theta[y] = x
+        return theta
+    if isinstance(x, list) and isinstance(y, list):
+        if len(x) != len(y):
+            return "FAILURE"
+        for xi, yi in zip(x, y):
+            theta = unify(substitute(xi, theta), substitute(yi, theta), theta)
+            if theta == "FAILURE":
+                return "FAILURE"
+        return theta
+    return "FAILURE"
+
+
+# ---------- Standardize Variables ----------
+def standardize_variables(rule, counter):
+    """Rename variables uniquely for each rule."""
+    new_rule = deepcopy(rule)
+    mapping = {}
+
+    def rename(term):
+        if isinstance(term, str) and term.islower():  # variable
+            if term not in mapping:
+                mapping[term] = f"{term}{counter}"
+            return mapping[term]
+        return term
+
+    for i in range(len(new_rule["premises"])):
+        new_rule["premises"][i] = [rename(t) for t in new_rule["premises"][i]]
+    new_rule["conclusion"] = [rename(t) for t in new_rule["conclusion"]]
+    return new_rule
+
+
+# ---------- Forward-Chaining Algorithm ----------
+def FOL_FC_ASK(KB, query):
+    new_facts = []
+    iteration = 1
+    facts = deepcopy(KB["facts"])
+
+    while True:
+        print(f"\nIteration {iteration}:")
+        added = []
+
+        for rule in KB["rules"]:
+            rule_std = standardize_variables(rule, iteration)
+            premises = rule_std["premises"]
+            conclusion = rule_std["conclusion"]
+
+            # Try to match all premises with existing facts
+            for f1 in facts:
+                theta = unify(premises[0], f1, {})
+                if theta != "FAILURE":
+                    if len(premises) == 1:
+                        # Single-premise rule
+                        inferred = substitute(conclusion, theta)
+                        if inferred not in facts and inferred not in added:
+                            added.append(inferred)
+                            print("  Derived new fact:", inferred)
+                            if unify(inferred, query, {}) != "FAILURE":
+                                print("\n✅ Query unified with derived fact!")
+                                return True
+                    else:
+                        # Multi-premise rule
+                        for f2 in facts:
+                            theta2 = unify(substitute(premises[1], theta), f2, theta)
+                            if theta2 != "FAILURE":
+                                inferred = substitute(conclusion, theta2)
+                                if inferred not in facts and inferred not in added:
+                                    added.append(inferred)
+                                    print("  Derived new fact:", inferred)
+                                    if unify(inferred, query, {}) != "FAILURE":
+                                        print("\n✅ Query unified with derived fact!")
+                                        return True
+
+        if not added:
+            break  # No new facts — stop
+        facts.extend(added)
+        new_facts.extend(added)
+        iteration += 1
+
+    print("\n❌ No more new facts can be inferred.")
+    return False
+
+
+# ---------- Example Knowledge Base ----------
+KB = {
+    "facts": [
+        ["Parent", "John", "Mary"],
+        ["Parent", "Mary", "Anne"]
+    ],
+    "rules": [
+        {
+            "premises": [["Parent", "x", "y"], ["Parent", "y", "z"]],
+            "conclusion": ["Grandparent", "x", "z"]
+        }
+    ]
+}
+
+# ---------- Query ----------
+query = ["Grandparent", "John", "Anne"]
+
+# ---------- Run the Algorithm ----------
+print("Knowledge Base:")
+for f in KB["facts"]:
+    print("  Fact:", f)
+for r in KB["rules"]:
+    print("  Rule:", r)
+
+print("\nQuery:", query)
+
+result = FOL_FC_ASK(KB, query)
+
+print("\n--- Final Result ---")
+if result:
+    print("✅ Query is True: It can be inferred from KB.")
+else:
+    print("❌ Query cannot be inferred from KB.")

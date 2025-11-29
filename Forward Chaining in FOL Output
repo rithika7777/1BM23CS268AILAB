@@ -1,0 +1,14 @@
+Knowledge Base:
+  Fact: ['Parent', 'John', 'Mary']
+  Fact: ['Parent', 'Mary', 'Anne']
+  Rule: {'premises': [['Parent', 'x', 'y'], ['Parent', 'y', 'z']], 'conclusion': ['Grandparent', 'x', 'z']}
+
+Query: ['Grandparent', 'John', 'Anne']
+
+Iteration 1:
+  Derived new fact: ['Grandparent', 'John', 'Anne']
+
+✅ Query unified with derived fact!
+
+--- Final Result ---
+✅ Query is True: It can be inferred from KB.

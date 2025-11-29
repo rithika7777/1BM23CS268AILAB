@@ -1,0 +1,15 @@
+Expression A: ['knows', 'john', 'x']
+Expression B: ['knows', 'y', 'mary']
+
+--- Unification Process ---
+
+Comparing predicates: knows and knows
+→ Unifying argument 1: john with y
+  Substituting john = y
+→ Unifying argument 2: x with mary
+  Substituting x = mary
+
+--- Final Result ---
+✅ Unification successful!
+Substitution Set: {'john': 'y', 'x': 'mary'}
+Unified Expression: ['knows', 'y', 'mary']

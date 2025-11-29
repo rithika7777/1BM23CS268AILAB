@@ -1,0 +1,85 @@
+import random
+import math
+
+def create_initial_state(N):
+    return [random.randint(0, N - 1) for _ in range(N)]
+
+def count_conflicts(state):
+    conflicts = 0
+    N = len(state)
+    for i in range(N):
+        for j in range(i + 1, N):
+            if state[i] == state[j] or abs(state[i] - state[j]) == abs(i - j):
+                conflicts += 1
+    return conflicts
+
+def get_neighbors(state):
+    neighbors = []
+    N = len(state)
+    for i in range(N):
+        for new_row in range(N):
+            if new_row != state[i]:
+                new_state = state[:]
+                new_state[i] = new_row
+                neighbors.append(new_state)
+    return neighbors
+
+def simulated_annealing(N, initial_temperature, cooling_rate, max_iterations):
+    current_state = create_initial_state(N)
+    current_energy = count_conflicts(current_state)
+    temperature = initial_temperature
+    
+    best_state = current_state
+    best_energy = current_energy
+    
+    iteration = 0
+    
+    while temperature > 0.1 and iteration < max_iterations:
+      
+        neighbors = get_neighbors(current_state)
+        
+       
+        neighbor = random.choice(neighbors)
+        neighbor_energy = count_conflicts(neighbor)
+        
+    
+        energy_diff = neighbor_energy - current_energy
+        
+     
+        if energy_diff < 0 or random.random() < math.exp(-energy_diff / temperature):
+            current_state = neighbor
+            current_energy = neighbor_energy
+            
+            if current_energy < best_energy:
+                best_state = current_state
+                best_energy = current_energy
+        
+        temperature *= cooling_rate
+        iteration += 1
+        
+        if best_energy == 0:
+            break
+    
+    return best_state, best_energy
+
+def print_solution(state):
+    N = len(state)
+    board = [["." for _ in range(N)] for _ in range(N)]
+    for i in range(N):
+        board[state[i]][i] = "Q"
+    
+    for row in board:
+        print(" ".join(row))
+
+N = 6  
+initial_temperature = 1000
+cooling_rate = 0.99
+max_iterations = 10000
+
+solution, conflicts = simulated_annealing(N, initial_temperature, cooling_rate, max_iterations)
+
+if conflicts == 0:
+    print("Solution found:")
+    print_solution(solution)
+else:
+    print(f"Solution not found, conflicts: {conflicts}")

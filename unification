@@ -1,0 +1,102 @@
+# ===============================
+# Unification Algorithm in Python
+# ===============================
+
+def occur_check(var, x):
+    """Check if variable 'var' occurs in expression 'x'."""
+    if var == x:
+        return True
+    elif isinstance(x, list):
+        return any(occur_check(var, xi) for xi in x)
+    return False
+
+
+def substitute(s, theta):
+    """Apply substitution theta to expression s."""
+    if isinstance(s, list):
+        return [substitute(si, theta) for si in s]
+    elif s in theta:
+        return substitute(theta[s], theta)
+    else:
+        return s
+
+
+def unify(x, y, theta=None, depth=0):
+    """Unify expressions x and y with substitution theta (with debug info)."""
+    indent = "  " * depth
+    if theta is None:
+        theta = {}
+
+    if theta == "FAILURE":
+        return "FAILURE"
+
+    # Step 1a: Identical constants or variables
+    if x == y:
+        print(f"{indent}✔ Both terms are identical: {x}")
+        return theta
+
+    # Step 1b: x is a variable
+    if isinstance(x, str) and x.islower():
+        if occur_check(x, y):
+            print(f"{indent}❌ Occur-check failed: {x} occurs in {y}")
+            return "FAILURE"
+        print(f"{indent}Substituting {x} = {y}")
+        theta[x] = y
+        return theta
+
+    # Step 1c: y is a variable
+    if isinstance(y, str) and y.islower():
+        if occur_check(y, x):
+            print(f"{indent}❌ Occur-check failed: {y} occurs in {x}")
+            return "FAILURE"
+        print(f"{indent}Substituting {y} = {x}")
+        theta[y] = x
+        return theta
+
+    # Step 2: Predicate symbols differ
+    if isinstance(x, list) and isinstance(y, list):
+        if len(x) != len(y):
+            print(f"{indent}❌ Different number of arguments: {x}, {y}")
+            return "FAILURE"
+
+        # Check predicate symbol
+        if x[0] != y[0]:
+            print(f"{indent}❌ Predicate symbols differ: {x[0]} vs {y[0]}")
+            return "FAILURE"
+
+        print(f"{indent}Comparing predicates: {x[0]} and {y[0]}")
+        for i, (xi, yi) in enumerate(zip(x[1:], y[1:]), start=1):
+            print(f"{indent}→ Unifying argument {i}: {xi} with {yi}")
+            theta = unify(substitute(xi, theta), substitute(yi, theta), theta, depth + 1)
+            if theta == "FAILURE":
+                return "FAILURE"
+        return theta
+
+    return "FAILURE"
+
+
+# ===============================
+# Example usage
+# ===============================
+
+expr1 = ["knows", "john", "x"]
+expr2 = ["knows", "y", "mary"]
+
+print("Expression A:", expr1)
+print("Expression B:", expr2)
+print("\n--- Unification Process ---\n")
+
+result = unify(expr1, expr2)
+
+print("\n--- Final Result ---")
+if result == "FAILURE":
+    print("❌ Unification failed.")
+else:
+    print("✅ Unification successful!")
+    print("Substitution Set:", result)
+
+    # Apply final substitutions to both expressions
+    unified_A = substitute(expr1, result)
+    unified_B = substitute(expr2, result)
+
+    print("Unified Expression:", unified_A)
